@@ -1,0 +1,4 @@
+airflow/logs/
+.env
+.venv/
+*.log
