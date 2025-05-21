@@ -1,0 +1,27 @@
+[2025-04-23T17:29:07.687+0000] {local_task_job_runner.py:120} INFO - ::group::Pre task execution logs
+[2025-04-23T17:29:07.700+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: preprocessing_pipeline.run_preprocessing manual__2025-04-23T17:29:05.334723+00:00 [queued]>
+[2025-04-23T17:29:07.703+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: preprocessing_pipeline.run_preprocessing manual__2025-04-23T17:29:05.334723+00:00 [queued]>
+[2025-04-23T17:29:07.704+0000] {taskinstance.py:2306} INFO - Starting attempt 1 of 1
+[2025-04-23T17:29:07.709+0000] {taskinstance.py:2330} INFO - Executing <Task(PythonOperator): run_preprocessing> on 2025-04-23 17:29:05.334723+00:00
+[2025-04-23T17:29:07.716+0000] {warnings.py:110} WARNING - /home/airflow/.local/lib/python3.12/site-packages/airflow/task/task_runner/standard_task_runner.py:61: DeprecationWarning: This process (pid=205) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  pid = os.fork()
+
+[2025-04-23T17:29:07.717+0000] {standard_task_runner.py:63} INFO - Started process 207 to run task
+[2025-04-23T17:29:07.717+0000] {standard_task_runner.py:90} INFO - Running: ['airflow', 'tasks', 'run', 'preprocessing_pipeline', 'run_preprocessing', 'manual__2025-04-23T17:29:05.334723+00:00', '--job-id', '7', '--raw', '--subdir', 'DAGS_FOLDER/dag_preprocessing.py', '--cfg-path', '/tmp/tmpguhvqffy']
+[2025-04-23T17:29:07.718+0000] {standard_task_runner.py:91} INFO - Job 7: Subtask run_preprocessing
+[2025-04-23T17:29:07.741+0000] {task_command.py:426} INFO - Running <TaskInstance: preprocessing_pipeline.run_preprocessing manual__2025-04-23T17:29:05.334723+00:00 [running]> on host 7cc2314952d5
+[2025-04-23T17:29:07.781+0000] {taskinstance.py:2648} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='airflow' AIRFLOW_CTX_DAG_ID='preprocessing_pipeline' AIRFLOW_CTX_TASK_ID='run_preprocessing' AIRFLOW_CTX_EXECUTION_DATE='2025-04-23T17:29:05.334723+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2025-04-23T17:29:05.334723+00:00'
+[2025-04-23T17:29:07.781+0000] {taskinstance.py:430} INFO - ::endgroup::
+[2025-04-23T17:29:07.782+0000] {dag_preprocessing.py:34} INFO - === INIZIO PREPROCESSAMENTO ===
+[2025-04-23T17:29:07.782+0000] {dag_preprocessing.py:23} INFO - Download risorse NLTK...
+[2025-04-23T17:29:08.170+0000] {dag_preprocessing.py:27} INFO - ✓ 'punkt' scaricato.
+[2025-04-23T17:29:08.171+0000] {dag_preprocessing.py:27} INFO - ✓ 'stopwords' scaricato.
+[2025-04-23T17:29:08.201+0000] {dag_preprocessing.py:27} INFO - ✓ 'wordnet' scaricato.
+[2025-04-23T17:29:08.203+0000] {dag_preprocessing.py:44} ERROR - Errore caricamento CSV: [Errno 2] No such file or directory: "'/opt/airflow/***/sentiment_data/raw/all-data.csv"
+[2025-04-23T17:29:08.203+0000] {dag_preprocessing.py:82} ERROR - ✗ Errore nel task di preprocessing: [Errno 2] No such file or directory: "'/opt/airflow/***/sentiment_data/raw/all-data.csv"
+[2025-04-23T17:29:08.203+0000] {python.py:237} INFO - Done. Returned value was: None
+[2025-04-23T17:29:08.203+0000] {taskinstance.py:441} INFO - ::group::Post task execution logs
+[2025-04-23T17:29:08.208+0000] {taskinstance.py:1206} INFO - Marking task as SUCCESS. dag_id=preprocessing_pipeline, task_id=run_preprocessing, run_id=manual__2025-04-23T17:29:05.334723+00:00, execution_date=20250423T172905, start_date=20250423T172907, end_date=20250423T172908
+[2025-04-23T17:29:08.238+0000] {local_task_job_runner.py:240} INFO - Task exited with return code 0
+[2025-04-23T17:29:08.249+0000] {taskinstance.py:3498} INFO - 0 downstream tasks scheduled from follow-on schedule check
+[2025-04-23T17:29:08.250+0000] {local_task_job_runner.py:222} INFO - ::endgroup::

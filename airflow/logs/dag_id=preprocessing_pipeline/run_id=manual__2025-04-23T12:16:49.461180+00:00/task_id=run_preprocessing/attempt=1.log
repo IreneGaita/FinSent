@@ -1,0 +1,73 @@
+[2025-04-23T12:16:51.914+0000] {local_task_job_runner.py:120} INFO - ::group::Pre task execution logs
+[2025-04-23T12:16:51.992+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: preprocessing_pipeline.run_preprocessing manual__2025-04-23T12:16:49.461180+00:00 [queued]>
+[2025-04-23T12:16:52.026+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: preprocessing_pipeline.run_preprocessing manual__2025-04-23T12:16:49.461180+00:00 [queued]>
+[2025-04-23T12:16:52.027+0000] {taskinstance.py:2306} INFO - Starting attempt 1 of 1
+[2025-04-23T12:16:52.113+0000] {taskinstance.py:2330} INFO - Executing <Task(PythonOperator): run_preprocessing> on 2025-04-23 12:16:49.461180+00:00
+[2025-04-23T12:16:52.126+0000] {warnings.py:110} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:61: DeprecationWarning: This process (pid=250) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  pid = os.fork()
+
+[2025-04-23T12:16:52.129+0000] {standard_task_runner.py:63} INFO - Started process 252 to run task
+[2025-04-23T12:16:52.131+0000] {standard_task_runner.py:90} INFO - Running: ['***', 'tasks', 'run', 'preprocessing_pipeline', 'run_preprocessing', 'manual__2025-04-23T12:16:49.461180+00:00', '--job-id', '8', '--raw', '--subdir', 'DAGS_FOLDER/dag_preprocessing.py', '--cfg-path', '/tmp/tmpazo11e1s']
+[2025-04-23T12:16:52.132+0000] {standard_task_runner.py:91} INFO - Job 8: Subtask run_preprocessing
+[2025-04-23T12:16:52.343+0000] {task_command.py:426} INFO - Running <TaskInstance: preprocessing_pipeline.run_preprocessing manual__2025-04-23T12:16:49.461180+00:00 [running]> on host 558735b76edf
+[2025-04-23T12:16:52.530+0000] {taskinstance.py:2648} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='***' AIRFLOW_CTX_DAG_ID='preprocessing_pipeline' AIRFLOW_CTX_TASK_ID='run_preprocessing' AIRFLOW_CTX_EXECUTION_DATE='2025-04-23T12:16:49.461180+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2025-04-23T12:16:49.461180+00:00'
+[2025-04-23T12:16:52.536+0000] {taskinstance.py:430} INFO - ::endgroup::
+[2025-04-23T12:16:52.542+0000] {dag_preprocessing.py:92} INFO - Esecuzione del task di preprocessing iniziata.
+[2025-04-23T12:16:52.543+0000] {dag_preprocessing.py:27} INFO - Avvio del preprocessing dei dati...
+[2025-04-23T12:16:52.543+0000] {dag_preprocessing.py:31} INFO - Percorso previsto per il CSV: /opt/***/sentiment_data/all-data.csv
+[2025-04-23T12:16:52.543+0000] {dag_preprocessing.py:34} INFO - Caricamento del file CSV...
+[2025-04-23T12:16:52.628+0000] {dag_preprocessing.py:36} INFO - File CSV caricato correttamente, numero di righe: 4846
+[2025-04-23T12:16:52.633+0000] {dag_preprocessing.py:48} INFO - Strumenti di preprocessamento inizializzati.
+[2025-04-23T12:16:52.633+0000] {dag_preprocessing.py:66} INFO - Inizio preprocessamento del testo...
+[2025-04-23T12:16:52.641+0000] {dag_preprocessing.py:70} ERROR - Errore durante il preprocessamento: 
+**********************************************************************
+  Resource [93mpunkt_tab[0m not found.
+  Please use the NLTK Downloader to obtain the resource:
+
+  [31m>>> import nltk
+  >>> nltk.download('punkt_tab')
+  [0m
+  For more information see: https://www.nltk.org/data.html
+
+  Attempted to load [93mtokenizers/punkt_tab/english/[0m
+
+  Searched in:
+    - '/home/***/nltk_data'
+    - '/home/***/.local/nltk_data'
+    - '/home/***/.local/share/nltk_data'
+    - '/home/***/.local/lib/nltk_data'
+    - '/usr/share/nltk_data'
+    - '/usr/local/share/nltk_data'
+    - '/usr/lib/nltk_data'
+    - '/usr/local/lib/nltk_data'
+**********************************************************************
+
+[2025-04-23T12:16:52.642+0000] {dag_preprocessing.py:97} ERROR - Errore nel task di preprocessing: 
+**********************************************************************
+  Resource [93mpunkt_tab[0m not found.
+  Please use the NLTK Downloader to obtain the resource:
+
+  [31m>>> import nltk
+  >>> nltk.download('punkt_tab')
+  [0m
+  For more information see: https://www.nltk.org/data.html
+
+  Attempted to load [93mtokenizers/punkt_tab/english/[0m
+
+  Searched in:
+    - '/home/***/nltk_data'
+    - '/home/***/.local/nltk_data'
+    - '/home/***/.local/share/nltk_data'
+    - '/home/***/.local/lib/nltk_data'
+    - '/usr/share/nltk_data'
+    - '/usr/local/share/nltk_data'
+    - '/usr/lib/nltk_data'
+    - '/usr/local/lib/nltk_data'
+**********************************************************************
+
+[2025-04-23T12:16:52.643+0000] {python.py:237} INFO - Done. Returned value was: None
+[2025-04-23T12:16:52.643+0000] {taskinstance.py:441} INFO - ::group::Post task execution logs
+[2025-04-23T12:16:52.658+0000] {taskinstance.py:1206} INFO - Marking task as SUCCESS. dag_id=preprocessing_pipeline, task_id=run_preprocessing, run_id=manual__2025-04-23T12:16:49.461180+00:00, execution_date=20250423T121649, start_date=20250423T121651, end_date=20250423T121652
+[2025-04-23T12:16:52.735+0000] {local_task_job_runner.py:240} INFO - Task exited with return code 0
+[2025-04-23T12:16:52.776+0000] {taskinstance.py:3498} INFO - 0 downstream tasks scheduled from follow-on schedule check
+[2025-04-23T12:16:52.778+0000] {local_task_job_runner.py:222} INFO - ::endgroup::
