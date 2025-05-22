@@ -2,3 +2,5 @@ airflow/logs/
 .env
 .venv/
 *.log
+eda_env/
+env/

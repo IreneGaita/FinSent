@@ -34,8 +34,8 @@ def preprocess():
     logger.info("=== INIZIO PREPROCESSAMENTO ===")
     download_nltk_resources()
 
-    csv_input = "/opt/airflow/dataset/sentiment_data/raw/all-data.csv"
-    csv_output = "/opt/airflow/dataset/sentiment_data/processed/preprocessed_data.csv"
+    csv_input = "/opt/airflow/data/raw/all-data.csv"
+    csv_output = "/opt/airflow/data/processed/preprocessed_data.csv"
 
     try:
         df = pd.read_csv(csv_input, encoding='latin1', names=['label', 'text'])

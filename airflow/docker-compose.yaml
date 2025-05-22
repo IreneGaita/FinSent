@@ -77,7 +77,7 @@ x-airflow-common:
     - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags
     - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs
     - ${AIRFLOW_PROJ_DIR:-.}/nltk_data:/opt/airflow/nltk_data
-    - ${AIRFLOW_PROJ_DIR:-.}/dataset/sentiment_data:/opt/airflow/dataset/sentiment_data
+    - ${AIRFLOW_PROJ_DIR:-.}/data:/opt/airflow/data
 
   depends_on:
     &airflow-common-depends-on
@@ -124,7 +124,7 @@ services:
       - "8081:8080"
     environment:
       <<: *airflow-common-env
-      PYTHONPATH: /opt/airflow/dataset/sentiment_data
+      PYTHONPATH: /opt/airflow/data
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
       interval: 30s
@@ -140,8 +140,7 @@ services:
       - ./dags:/opt/airflow/dags
       - ./logs:/opt/airflow/logs
       - ./nltk_data:/opt/airflow/nltk_data
-      - ./dataset:/opt/airflow/dataset
-      - ./dataset/sentiment_data:/opt/airflow/dataset/sentiment_data
+      - ./data:/opt/airflow/data
       - ./dags/requirements.txt:/requirements.txt
 
   airflow-scheduler:
@@ -157,7 +156,7 @@ services:
     restart: always
     environment:
       <<: *airflow-common-env
-      PYTHONPATH: /opt/airflow/dataset/sentiment_data
+      PYTHONPATH: /opt/airflow/data
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
@@ -166,8 +165,7 @@ services:
       - ./dags:/opt/airflow/dags
       - ./logs:/opt/airflow/logs
       - ./nltk_data:/opt/airflow/nltk_data
-      - ./dataset:/opt/airflow/dataset
-      - ./dataset/sentiment_data:/opt/airflow/dataset/sentiment_data
+      - ./data:/opt/airflow/data
       - ./dags/requirements.txt:/requirements.txt
 
   airflow-worker:
@@ -176,7 +174,7 @@ services:
       bash -c "pip install -r /requirements.txt && airflow celery worker"
     environment:
       <<: *airflow-common-env
-      PYTHONPATH: /opt/airflow/dataset/sentiment_data
+      PYTHONPATH: /opt/airflow/data
       DUMB_INIT_SETSID: "0"
     healthcheck:
       test: [ "CMD", "celery", "-A", "dataset", "status" ]
@@ -189,8 +187,7 @@ services:
       - ./logs:/opt/airflow/logs
       - ./nltk_data:/opt/airflow/nltk_data
       - ./dags/requirements.txt:/requirements.txt
-      - ./dataset:/opt/airflow/dataset
-      - ./dataset/sentiment_data:/opt/airflow/dataset/sentiment_data
+      - ./data:/opt/airflow/data
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
