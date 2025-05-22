@@ -4,3 +4,4 @@ airflow/logs/
 *.log
 eda_env/
 env/
+env_nlp/
