@@ -5,7 +5,7 @@ import pandas as pd
 import re
 import nltk
 from nltk.corpus import stopwords
-from nltk.stem import SnowballStemmer, WordNetLemmatizer
+from nltk.stem import WordNetLemmatizer
 import logging
 import os
 
@@ -45,23 +45,44 @@ def preprocess():
         raise
 
     stop_words = set(stopwords.words('english'))
-    stemmer = SnowballStemmer('english')
     lemmatizer = WordNetLemmatizer()
 
     def preprocess_text(text):
         if not isinstance(text, str):
             return ""
-        text = re.sub(r'\d+', '', text.lower())
-        text = re.sub(r'[^\w\s]', '', text)
+        
+        text = text.lower()
 
+        # 1. Separazione di lettere e numeri uniti (es. eur131m → eur 131 m)
+        text = re.sub(r'([a-zA-Z]+)(\d+)', r'\1 \2', text)
+
+        # 2. Gestione intervalli numerici (es. 2009-2012 → NUM - NUM)
+        text = re.sub(r'(\d+)\s*-\s*(\d+)', r'NUM - NUM', text)
+
+        # 3. Normalizzazione valute testuali e simboli
+        text = re.sub(r'\b(euro|eur|dollari|dollars|usd)\b', 'CUR', text)
+        text = re.sub(r'[\$€£]', ' CUR ', text)
+
+        # 4. Normalizzazione percentuali (es. 10%, 5.5%, 3,2%)
+        text = re.sub(r'\b\d{1,3}(?:[.,]\d+)?\s*%', 'NUM_PERCENT', text)
+
+        # 5. Normalizzazione numeri (interi, decimali, separatori)
+        text = re.sub(r'\b\d{1,3}(?:[.,]?\d{3})*(?:[.,]\d+)?\b', 'NUM', text)
+
+        text = re.sub(r'[^\w\s]', '', text)
+        
         try:
             nltk.data.find('tokenizers/punkt')
             words = nltk.word_tokenize(text)
         except Exception:
             words = text.split()  # Fallback
 
-        words = [stemmer.stem(w) for w in words if w not in stop_words]
+        # 6. Rimozione stopwords
+        words = [w for w in words if w not in stop_words]
+
+        # 7. Lemmatizzazione
         return ' '.join([lemmatizer.lemmatize(w) for w in words])
+
 
     df['cleaned_text'] = df['text'].apply(preprocess_text)
     df = df[df['cleaned_text'].str.split().str.len() > 2]
