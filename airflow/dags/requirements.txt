@@ -1,4 +1,5 @@
 pandas
 nltk
-apache-airflow
-logging
+bertopic[flavor]
+hdbscan
+scikit-learn
