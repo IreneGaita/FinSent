@@ -54,7 +54,7 @@ x-airflow-common:
   build: .
   environment:
     &airflow-common-env
-    AIRFLOW__CORE__EXECUTOR: CeleryExecutor
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://dataset:dataset@postgres/dataset
     AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://dataset:dataset@postgres/dataset
     AIRFLOW__CELERY__BROKER_URL: redis://:@redis:6379/0
@@ -142,6 +142,7 @@ services:
       - ./nltk_data:/opt/airflow/nltk_data
       - ./data:/opt/airflow/data
       - ./dags/requirements.txt:/requirements.txt
+      - ./models:/opt/airflow/models
 
   airflow-scheduler:
     <<: *airflow-common
@@ -167,6 +168,7 @@ services:
       - ./nltk_data:/opt/airflow/nltk_data
       - ./data:/opt/airflow/data
       - ./dags/requirements.txt:/requirements.txt
+      - ./models:/opt/airflow/models
 
   airflow-worker:
     <<: *airflow-common
@@ -188,6 +190,7 @@ services:
       - ./nltk_data:/opt/airflow/nltk_data
       - ./dags/requirements.txt:/requirements.txt
       - ./data:/opt/airflow/data
+      - ./models:/opt/airflow/models
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:

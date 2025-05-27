@@ -8,6 +8,7 @@ import nltk
 from hdbscan import HDBSCAN
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics import silhouette_score
+import dill
 
 # Suppress NLTK logging
 logging.getLogger('nltk').setLevel(logging.ERROR)
@@ -32,7 +33,7 @@ with DAG('bertopic_topic_modeling',
 
     def load_data(**context):
         import os
-        csv_input = "../data/processed/preprocessed_data.csv"
+        csv_input = "/opt/airflow/data/processed/preprocessed_data.csv"
         try:
             assert os.path.exists(csv_input), f"File non trovato: {csv_input}"
             df = pd.read_csv(csv_input)
@@ -48,11 +49,16 @@ with DAG('bertopic_topic_modeling',
     def generate_embeddings(**context):
         df = context['ti'].xcom_pull(key='dataframe')
         documents = df['cleaned_text'].astype(str).tolist()
+
+        # Carica modello
         embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
+
+        # Genera embeddings
         embeddings = embedding_model.encode(documents, show_progress_bar=True)
-        context['ti'].xcom_push(key='embeddings', value=embeddings)
+
+        # Push in XCom: converte embeddings in lista per JSON
+        context['ti'].xcom_push(key='embeddings', value=embeddings.tolist())
         context['ti'].xcom_push(key='documents', value=documents)
-        context['ti'].xcom_push(key='embedding_model', value=embedding_model)
 
     def test_hdbscan_params(**context):
         documents = context['ti'].xcom_pull(key='documents')
@@ -84,6 +90,7 @@ with DAG('bertopic_topic_modeling',
                 best_params = params
 
         context['ti'].xcom_push(key='best_params', value=best_params)
+
 
     def run_bertopic(**context):
         df = context['ti'].xcom_pull(key='dataframe')
@@ -117,9 +124,11 @@ with DAG('bertopic_topic_modeling',
         df['Topic_Label'] = df['Topic'].map(lambda t: topic_label_map.get(t, "outlier"))
 
         # Save results and model
-        df.to_csv("opt/airflow/data/processed/bertopic_output.csv", index=False)
-        topic_model.save("opt/airflow/models/bertopic_model")
+        df.to_csv("/opt/airflow/data/processed/bertopic_output.csv", index=False)
 
+        # Salvare il modello con dill invece di topic_model.save()
+        with open("/opt/airflow/models/bertopic_model.pkl", "wb") as f:
+            dill.dump(topic_model, f)
     # Tasks
     download_resources = PythonOperator(
         task_id='download_nltk_resources',
