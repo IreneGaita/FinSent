@@ -4,14 +4,11 @@ from datetime import datetime
 import pandas as pd
 import logging
 from bertopic import BERTopic
-import nltk
 from hdbscan import HDBSCAN
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics import silhouette_score
 import dill
 
-# Suppress NLTK logging
-logging.getLogger('nltk').setLevel(logging.ERROR)
 
 # Default args for DAG
 default_args = {
@@ -24,12 +21,6 @@ with DAG('bertopic_topic_modeling',
          schedule_interval=None,
          default_args=default_args,
          catchup=False) as dag:
-
-    def download_nltk_resources():
-        nltk.download('stopwords')
-        nltk.download('wordnet')
-        nltk.download('omw-1.4')
-
 
     def load_data(**context):
         import os
@@ -130,10 +121,6 @@ with DAG('bertopic_topic_modeling',
         with open("/opt/airflow/models/bertopic_model.pkl", "wb") as f:
             dill.dump(topic_model, f)
     # Tasks
-    download_resources = PythonOperator(
-        task_id='download_nltk_resources',
-        python_callable=download_nltk_resources
-    )
 
     load_dataset = PythonOperator(
         task_id='load_data',
@@ -160,4 +147,4 @@ with DAG('bertopic_topic_modeling',
     )
 
     # Define dependencies
-    download_resources >> load_dataset >> create_embeddings >> optimize_hdbscan >> bertopic_training
+    load_dataset >> create_embeddings >> optimize_hdbscan >> bertopic_training
