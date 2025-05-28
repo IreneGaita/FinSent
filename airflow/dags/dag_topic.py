@@ -22,7 +22,7 @@ with DAG('bertopic_topic_modeling',
          default_args=default_args,
          catchup=False) as dag:
 
-    def load_data(**context):
+    def load_data_preprocessed(**context):
         import os
         csv_input = "/opt/airflow/data/processed/preprocessed_data.csv"
         try:
@@ -86,7 +86,7 @@ with DAG('bertopic_topic_modeling',
     def run_bertopic(**context):
         df = context['ti'].xcom_pull(key='dataframe')
         documents = context['ti'].xcom_pull(key='documents')
-        embedding_model = context['ti'].xcom_pull(key='embedding_model')
+        embedding_model = SentenceTransformer("all-MiniLM-L6-v2")  # caricalo qui, perché non lo passiamo tramite XCom
         best_params = context['ti'].xcom_pull(key='best_params')
 
         hdbscan_model = HDBSCAN(
@@ -120,11 +120,12 @@ with DAG('bertopic_topic_modeling',
         # Salvare il modello con dill invece di topic_model.save()
         with open("/opt/airflow/models/bertopic_model.pkl", "wb") as f:
             dill.dump(topic_model, f)
+
     # Tasks
 
-    load_dataset = PythonOperator(
-        task_id='load_data',
-        python_callable=load_data,
+    load_dataset_preprocessed = PythonOperator(
+        task_id='load_data_preprocessed',
+        python_callable=load_data_preprocessed,
         provide_context=True
     )
 
@@ -147,4 +148,4 @@ with DAG('bertopic_topic_modeling',
     )
 
     # Define dependencies
-    load_dataset >> create_embeddings >> optimize_hdbscan >> bertopic_training
+    load_dataset_preprocessed >> create_embeddings >> optimize_hdbscan >> bertopic_training

@@ -3,7 +3,7 @@ from airflow.operators.python import PythonOperator
 from datetime import datetime
 from dag_preprocessing import run_preprocessing
 from dag_topic import (
-    load_data,
+    load_data_preprocessed,
     generate_embeddings,
     test_hdbscan_params,
     run_bertopic
@@ -21,8 +21,8 @@ with DAG("ml_pipeline",
     )
 
     t2 = PythonOperator(
-        task_id='load_data',
-        python_callable=load_data
+        task_id='load_data_preprocessed',
+        python_callable=load_data_preprocessed
     )
 
     t3 = PythonOperator(

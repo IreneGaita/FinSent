@@ -5,3 +5,5 @@ airflow/logs/
 eda_env/
 env/
 env_nlp/
+*.pyc
+*.pkl
