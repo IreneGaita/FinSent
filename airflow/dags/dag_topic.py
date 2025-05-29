@@ -74,7 +74,7 @@ with DAG('bertopic_topic_modeling',
 
         context['ti'].xcom_push(key='best_params', value=best_params)
 
-    def run_bertopic(pipeline_type='full',**context):
+    def run_bertopic(pipeline_type,**context):
         df = context['ti'].xcom_pull(key='dataframe')
         documents = context['ti'].xcom_pull(key='documents')
         embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
