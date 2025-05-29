@@ -9,22 +9,19 @@ from sentence_transformers import SentenceTransformer
 from sklearn.metrics import silhouette_score
 import dill
 
-
 # Default args for DAG
 default_args = {
     'start_date': datetime(2023, 1, 1),
     'retries': 1,
 }
 
-# Define DAG
 with DAG('bertopic_topic_modeling',
          schedule_interval=None,
          default_args=default_args,
          catchup=False) as dag:
 
-    def load_data_preprocessed(**context):
+    def load_data_preprocessed(csv_input, **context):
         import os
-        csv_input = "/opt/airflow/data/processed/preprocessed_data.csv"
         try:
             assert os.path.exists(csv_input), f"File non trovato: {csv_input}"
             df = pd.read_csv(csv_input)
@@ -36,18 +33,13 @@ with DAG('bertopic_topic_modeling',
             print(f"[ERROR] Errore nel caricamento del dataset: {e}")
             raise
 
-
     def generate_embeddings(**context):
         df = context['ti'].xcom_pull(key='dataframe')
         documents = df['cleaned_text'].astype(str).tolist()
 
-        # Carica modello
         embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
-
-        # Genera embeddings
         embeddings = embedding_model.encode(documents, show_progress_bar=True)
 
-        # Push in XCom: converte embeddings in lista per JSON
         context['ti'].xcom_push(key='embeddings', value=embeddings.tolist())
         context['ti'].xcom_push(key='documents', value=documents)
 
@@ -82,11 +74,10 @@ with DAG('bertopic_topic_modeling',
 
         context['ti'].xcom_push(key='best_params', value=best_params)
 
-
-    def run_bertopic(**context):
+    def run_bertopic(pipeline_type='full',**context):
         df = context['ti'].xcom_pull(key='dataframe')
         documents = context['ti'].xcom_pull(key='documents')
-        embedding_model = SentenceTransformer("all-MiniLM-L6-v2")  # caricalo qui, perché non lo passiamo tramite XCom
+        embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
         best_params = context['ti'].xcom_pull(key='best_params')
 
         hdbscan_model = HDBSCAN(
@@ -114,11 +105,16 @@ with DAG('bertopic_topic_modeling',
         }
         df['Topic_Label'] = df['Topic'].map(lambda t: topic_label_map.get(t, "outlier"))
 
-        # Save results and model
-        df.to_csv("/opt/airflow/data/processed/bertopic_output.csv", index=False)
+        if pipeline_type == 'full':
+            output_csv_path = "/opt/airflow/data/processed/bertopic_output_full.csv"
+            model_path = "/opt/airflow/models/bertopic_model_full.pkl"
+        else:  # light
+            output_csv_path = "/opt/airflow/data/processed/bertopic_output_light.csv"
+            model_path = "/opt/airflow/models/bertopic_model_light.pkl"
 
-        # Salvare il modello con dill invece di topic_model.save()
-        with open("/opt/airflow/models/bertopic_model.pkl", "wb") as f:
+        df.to_csv(output_csv_path, index=False)
+
+        with open(model_path, "wb") as f:
             dill.dump(topic_model, f)
 
     # Tasks
@@ -141,11 +137,19 @@ with DAG('bertopic_topic_modeling',
         provide_context=True
     )
 
-    bertopic_training = PythonOperator(
-        task_id='run_bertopic',
+    bertopic_training_full = PythonOperator(
+        task_id='run_bertopic_full',
         python_callable=run_bertopic,
+        op_kwargs={'pipeline_type': 'full'},
         provide_context=True
     )
 
-    # Define dependencies
-    load_dataset_preprocessed >> create_embeddings >> optimize_hdbscan >> bertopic_training
+    bertopic_training_light = PythonOperator(
+        task_id='run_bertopic_light',
+        python_callable=run_bertopic,
+        op_kwargs={'pipeline_type': 'light'},
+        provide_context=True
+    )
+
+    # Define dependencies for full pipeline
+    load_dataset_preprocessed >> create_embeddings >> optimize_hdbscan >> bertopic_training_full
