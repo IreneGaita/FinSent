@@ -25,11 +25,6 @@ with DAG("ml_pipeline",
         python_callable=run_preprocessing,
         op_kwargs= {'input_path': '/opt/airflow/data/raw/all-data.csv', 'pipeline_type': 'full'}
     )
-    task_load_data_preprocessed = PythonOperator(
-        task_id='load_data_preprocessed',
-        python_callable=load_data_preprocessed,
-        op_kwargs={'csv_input': '/opt/airflow/data/processed/preprocessed_data.csv','pipeline_type': 'full'}
-    )
 
     task_load_data_light = PythonOperator(
         task_id='load_data_light',
@@ -39,50 +34,41 @@ with DAG("ml_pipeline",
         },
     )
 
-    task_generate_embeddings_full = PythonOperator(
-        task_id='generate_embeddings_full',
-        python_callable=generate_embeddings
-    )
+    for pipeline_type in ['full', 'light']:
+        load_task = PythonOperator(
+            task_id=f'load_data_{pipeline_type}',
+            python_callable=load_data_preprocessed,
+            op_kwargs={'csv_input': f'/opt/airflow/data/processed/cleaned_data_{pipeline_type}.csv',
+                       'pipeline_type': pipeline_type},
+            provide_context=True
+        )
 
-    task_test_hdbscan_params_full = PythonOperator(
-        task_id='test_hdbscan_params_full',
-        python_callable=test_hdbscan_params
-    )
+        embeddings_task = PythonOperator(
+            task_id=f'generate_embeddings_{pipeline_type}',
+            python_callable=generate_embeddings,
+            op_kwargs={'pipeline_type': pipeline_type},
+            provide_context=True
+        )
 
-    task_run_bertopic_full = PythonOperator(
-        task_id='run_bertopic_full',
-        python_callable=run_bertopic
-    )
+        hdbscan_task = PythonOperator(
+            task_id=f'test_hdbscan_params_{pipeline_type}',
+            python_callable=test_hdbscan_params,
+            op_kwargs={'pipeline_type': pipeline_type},
+            provide_context=True
+        )
 
-    # Light pipeline
-    task_light_preprocess = PythonOperator(
-        task_id='run_light_preprocessing',
-        python_callable=light_preprocess_for_bertopic,
-        op_kwargs={
-            'csv_input': '/opt/airflow/data/raw/all-data.csv',
-            'csv_output': '/opt/airflow/data/processed/light_preprocessed_data.csv'
-        }
-    )
+        bertopic_task = PythonOperator(
+            task_id=f'run_bertopic_{pipeline_type}',
+            python_callable=run_bertopic,
+            op_kwargs={'pipeline_type': pipeline_type},
+            provide_context=True
+        )
 
-    task_generate_embeddings_light = PythonOperator(
-        task_id='generate_embeddings_light',
-        python_callable=generate_embeddings,
 
-    )
 
-    task_test_hdbscan_params_light = PythonOperator(
-        task_id='test_hdbscan_params_light',
-        python_callable=test_hdbscan_params,
 
-    )
 
-    task_run_bertopic_light = PythonOperator(
-        task_id='run_bertopic_light',
-        python_callable=run_bertopic,
-        op_kwargs={'pipeline_type': 'light'},
-
-    )
 
     # Set dependencies
-    task_run_preprocessing >> task_load_data_preprocessed >> task_generate_embeddings_full >> task_test_hdbscan_params_full >> task_run_bertopic_full
-    task_light_preprocess >> task_load_data_light >> task_generate_embeddings_light >> task_test_hdbscan_params_light >> task_run_bertopic_light
+    task_run_preprocessing >> load_task >> embeddings_task >> hdbscan_task >> bertopic_task
+    load_task >> task_load_data_light >> embeddings_task >> hdbscan_task >> bertopic_task

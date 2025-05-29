@@ -42,7 +42,8 @@ def load_light_data_preprocessed(csv_input: str, **context):
             raise ValueError("Colonna 'cleaned_text' mancante nel CSV")
         logger.info(f"[INFO] Dataset caricato correttamente: {csv_input} con {df.shape[0]} righe")
         # Passa dataframe come XCom (attenzione dimensione)
-        context['ti'].xcom_push(key='dataframe', value=df.to_dict())
+        context['ti'].xcom_push(key='dataframe_light', value=df)
+
     except Exception as e:
         logger.error(f"[ERROR] Errore nel caricamento del dataset: {e}")
         raise
