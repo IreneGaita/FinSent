@@ -1,2 +1,5 @@
 env_nlp/
 eda_env/
+_pycache_/
+*.pyc
+.DS_Store
