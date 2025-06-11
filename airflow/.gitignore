@@ -7,3 +7,5 @@ env/
 env_nlp/
 *.pyc
 *.pkl
+GoogleNews-vectors-negative300.bin
+desktop.ini
