@@ -49,7 +49,7 @@ def load_light_data_preprocessed(csv_input: str, **context):
         raise
 
 with DAG(
-        dag_id='bertopic_light_preprocessing_pipeline',
+        dag_id='light_preprocessing',
         start_date=datetime(2023, 1, 1),
         schedule_interval=None,
         catchup=False,

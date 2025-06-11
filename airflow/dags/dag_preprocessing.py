@@ -104,7 +104,7 @@ def run_preprocessing():
 
 
 with DAG(
-    dag_id='preprocessing_pipeline',
+    dag_id='aggressive_preprocessing',
     start_date=datetime(2023, 1, 1),
     schedule_interval=None,
     catchup=False,
