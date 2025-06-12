@@ -4,3 +4,10 @@ bertopic[flavor]
 hdbscan
 scikit-learn
 dill
+transformers
+torch
+pandas
+numpy
+tqdm
+sentence-transformers
+gensim
