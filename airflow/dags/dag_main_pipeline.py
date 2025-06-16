@@ -57,6 +57,83 @@ with DAG('main_nlp_pipeline',
         wait_for_completion=True,
         reset_dag_run=True
     )
+    log_start_embeddings = PythonOperator(
+        task_id='log_start_embeddings',
+        python_callable=log_message("🔁 Avvio DAG embeddings_generation")
+    )
+    trigger_embeddings = TriggerDagRunOperator(
+        task_id='trigger_embeddings_generation',
+        trigger_dag_id='generate_embeddings_dag',
+        wait_for_completion=True,
+        reset_dag_run=True
+    )
+    log_start_training_w2v = PythonOperator(
+        task_id='log_start_training_word2vec_balanced',
+        python_callable=log_message("🔁 Avvio DAG training_word2vec")
+    )
 
-    [log_start_preprocessing >> trigger_preprocessing,
-     log_start_light >> trigger_light] >> log_start_bertopic >> trigger_bertopic
+    trigger_training_w2v = TriggerDagRunOperator(
+        task_id='trigger_training_word2vec_balanced',
+        trigger_dag_id='train_word2vec_model_dag',
+        wait_for_completion=True,
+        reset_dag_run=True
+    )
+    log_start_training_w2v_unbalanced = PythonOperator(
+        task_id='log_start_training_word2vec_unbalanced',
+        python_callable=log_message("🔁 Avvio DAG training_word2vec UNBALANCED")
+    )
+
+    trigger_training_w2v_unbalanced = TriggerDagRunOperator(
+        task_id='trigger_training_word2vec_unbalanced',
+        trigger_dag_id='train_word2vec_model_dag_unbalanced',
+        wait_for_completion=True,
+        reset_dag_run=True
+    )
+
+
+    log_start_training_sbert = PythonOperator(
+        task_id='log_start_training_sbert',
+        python_callable=log_message("🔁 Avvio DAG training_sbert")
+    )
+
+    trigger_training_sbert = TriggerDagRunOperator(
+        task_id='trigger_training_sbert',
+        trigger_dag_id='train_sbert_model_dag',
+        wait_for_completion=True,
+        reset_dag_run=True
+    )
+    log_start_training_sbert_unbalanced = PythonOperator(
+        task_id='log_start_training_sbert_unbalanced',
+        python_callable=log_message("🔁 Avvio DAG training_sbert UNBALANCED")
+    )
+
+    trigger_training_sbert_unbalanced = TriggerDagRunOperator(
+        task_id='trigger_training_sbert_unbalanced',
+        trigger_dag_id='train_sbert_model_dag_unbalanced',
+        wait_for_completion=True,
+        reset_dag_run=True
+    )
+    log_start_comparison = PythonOperator(
+        task_id='log_start_comparison',
+        python_callable=log_message("📊 Avvio DAG di confronto esperimenti")
+    )
+
+    trigger_comparison = TriggerDagRunOperator(
+        task_id='trigger_compare_experiments',
+        trigger_dag_id='compare_experiments_dag',
+        wait_for_completion=True,
+        reset_dag_run=True
+    )
+
+    [
+        log_start_preprocessing >> trigger_preprocessing,
+        log_start_light >> trigger_light
+    ] >> log_start_bertopic >> trigger_bertopic \
+    >> log_start_embeddings >> trigger_embeddings
+
+    trigger_embeddings >> [
+        log_start_training_w2v >> trigger_training_w2v,
+        log_start_training_sbert >> trigger_training_sbert,
+        log_start_training_w2v_unbalanced >> trigger_training_w2v_unbalanced,
+        log_start_training_sbert_unbalanced >> trigger_training_sbert_unbalanced
+    ] >> log_start_comparison >> trigger_comparison

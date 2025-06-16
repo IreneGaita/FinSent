@@ -30,7 +30,7 @@ def generate_word2vec():
     print(">>> [WORD2VEC] Task avviato")
 
     # Carica il dataset
-    df = pd.read_csv("/opt/airflow/data/topic/topics_aggressive.csv").sample(5, random_state=42)
+    df = pd.read_csv("/opt/airflow/data/topic/topics_aggressive.csv")
     print(f">>> [WORD2VEC] Dataset caricato: {df.shape}")
 
     # Carica il modello GloVe (50 dimensioni, leggero)

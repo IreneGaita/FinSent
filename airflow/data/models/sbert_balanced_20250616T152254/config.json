@@ -1,0 +1,9 @@
+{
+  "model": "LogisticRegression",
+  "embedding": "SBERT (all-MiniLM-L6-v2)",
+  "balancing": "class_weight=balanced",
+  "use_smote": false,
+  "test_size": 0.2,
+  "random_state": 42,
+  "timestamp": "20250616T152254"
+}
