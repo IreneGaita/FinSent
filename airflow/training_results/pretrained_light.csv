@@ -1,0 +1,6 @@
+model,accuracy,precision,recall,f1_score,label
+mrm8488/deberta-v3-ft-financial-news-sentiment-analysis,0.9896800825593395,0.9894496997605287,0.9894496997605287,0.9894496997605287,mrm8488/deberta-v3-ft-financial-news-sentiment-analysis
+ProsusAI/finbert,0.8823529411764706,0.8518672647806668,0.9078600735519186,0.8754198865084724,ProsusAI/finbert
+mrm8488/distilroberta-finetuned-financial-news-sentiment-analysis,0.8534571723426213,0.8449902211523996,0.8356698108536343,0.840134056877973,mrm8488/distilroberta-finetuned-financial-news-sentiment-analysis
+yiyanghkust/finbert-tone,0.7863777089783281,0.7920264727003069,0.7234316763895641,0.7436425369432521,yiyanghkust/finbert-tone
+soleimanian/financial-roberta-large-sentiment,0.7801857585139319,0.7854616452706161,0.8465667143808856,0.7928536338478791,soleimanian/financial-roberta-large-sentiment
