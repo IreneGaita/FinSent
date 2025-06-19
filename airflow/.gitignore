@@ -9,3 +9,5 @@ env_nlp/
 *.pkl
 GoogleNews-vectors-negative300.bin
 desktop.ini
+results
+trainer_output
