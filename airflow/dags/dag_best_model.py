@@ -1,10 +1,14 @@
+
+
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from datetime import datetime
 import os
 import json
 import pandas as pd
+import shutil
 
+# === Funzione 1: confronto tra esperimenti ===
 def compare_experiments():
     models_dir = "/opt/airflow/data/models"
     output_path = "/opt/airflow/data/reports/comparison_table.csv"
@@ -13,9 +17,8 @@ def compare_experiments():
     records = []
 
     for exp_dir in os.listdir(models_dir):
-        # Ignora cartelle che contengono "latest"
         if "latest" in exp_dir.lower():
-            continue
+            continue  # ignora cartelle latest
 
         full_path = os.path.join(models_dir, exp_dir)
         if not os.path.isdir(full_path):
@@ -48,13 +51,41 @@ def compare_experiments():
     df.to_csv(output_path, index=False)
     print(f">>> 📊 Comparazione salvata in: {output_path}")
 
-# DAG
+# === Funzione 2: aggiorna il modello migliore ===
+def update_best_model_latest():
+    comparison_path = "/opt/airflow/data/reports/comparison_table.csv"
+    models_dir = "/opt/airflow/data/models"
+    latest_dir = os.path.join(models_dir, "best_model_latest")
+
+    if not os.path.exists(comparison_path):
+        raise FileNotFoundError("Il file comparison_table.csv non esiste.")
+
+    df = pd.read_csv(comparison_path)
+    if df.empty:
+        raise ValueError("Nessun esperimento trovato per l'aggiornamento.")
+
+    best_row = df.sort_values(by="accuracy", ascending=False).iloc[0]
+    best_model_path = os.path.join(models_dir, best_row["experiment"])
+
+    if os.path.exists(latest_dir):
+        shutil.rmtree(latest_dir)
+    os.makedirs(latest_dir)
+
+    for filename in ["model.pkl", "metrics.json", "config.json"]:
+        src = os.path.join(best_model_path, filename)
+        dst = os.path.join(latest_dir, filename)
+        if os.path.exists(src):
+            shutil.copy2(src, dst)
+
+    print(f">>> ✅ Modello aggiornato in: {latest_dir}")
+
+# === DAG ===
 with DAG(
-    dag_id="compare_experiments_dag",
+    dag_id="compare_and_update_best_model_dag",
     start_date=datetime(2024, 1, 1),
     schedule_interval=None,
     catchup=False,
-    tags=["ml", "evaluation", "compare"],
+    tags=["mlops", "evaluation", "update"],
 ) as dag:
 
     run_comparison = PythonOperator(
@@ -62,4 +93,9 @@ with DAG(
         python_callable=compare_experiments,
     )
 
-    run_comparison
+    update_latest_model = PythonOperator(
+        task_id="update_best_model_latest",
+        python_callable=update_best_model_latest,
+    )
+
+    run_comparison >> update_latest_model

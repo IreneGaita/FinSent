@@ -11,3 +11,7 @@ numpy
 tqdm
 sentence-transformers
 gensim
+fastapi
+uvicorn
+joblib
+pydantic

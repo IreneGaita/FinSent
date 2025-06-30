@@ -20,6 +20,7 @@ with DAG('main_nlp_pipeline',
          schedule_interval=None,
          catchup=False) as dag:
 
+    # --- Preprocessing ---
     log_start_preprocessing = PythonOperator(
         task_id='log_start_preprocessing',
         python_callable=log_message("🔁 Avvio DAG aggressive_preprocessing")
@@ -46,6 +47,7 @@ with DAG('main_nlp_pipeline',
         reset_dag_run=True
     )
 
+    # --- BERTopic ---
     log_start_bertopic = PythonOperator(
         task_id='log_start_bertopic',
         python_callable=log_message("🔁 Avvio DAG bertopic_topic_modeling")
@@ -57,16 +59,21 @@ with DAG('main_nlp_pipeline',
         wait_for_completion=True,
         reset_dag_run=True
     )
+
+    # --- Embeddings ---
     log_start_embeddings = PythonOperator(
         task_id='log_start_embeddings',
         python_callable=log_message("🔁 Avvio DAG embeddings_generation")
     )
+
     trigger_embeddings = TriggerDagRunOperator(
         task_id='trigger_embeddings_generation',
         trigger_dag_id='generate_embeddings_dag',
         wait_for_completion=True,
         reset_dag_run=True
     )
+
+    # --- Training ---
     log_start_training_w2v = PythonOperator(
         task_id='log_start_training_word2vec_balanced',
         python_callable=log_message("🔁 Avvio DAG training_word2vec")
@@ -78,6 +85,7 @@ with DAG('main_nlp_pipeline',
         wait_for_completion=True,
         reset_dag_run=True
     )
+
     log_start_training_w2v_unbalanced = PythonOperator(
         task_id='log_start_training_word2vec_unbalanced',
         python_callable=log_message("🔁 Avvio DAG training_word2vec UNBALANCED")
@@ -90,7 +98,6 @@ with DAG('main_nlp_pipeline',
         reset_dag_run=True
     )
 
-
     log_start_training_sbert = PythonOperator(
         task_id='log_start_training_sbert',
         python_callable=log_message("🔁 Avvio DAG training_sbert")
@@ -102,6 +109,7 @@ with DAG('main_nlp_pipeline',
         wait_for_completion=True,
         reset_dag_run=True
     )
+
     log_start_training_sbert_unbalanced = PythonOperator(
         task_id='log_start_training_sbert_unbalanced',
         python_callable=log_message("🔁 Avvio DAG training_sbert UNBALANCED")
@@ -113,6 +121,8 @@ with DAG('main_nlp_pipeline',
         wait_for_completion=True,
         reset_dag_run=True
     )
+
+    # --- Confronto ---
     log_start_comparison = PythonOperator(
         task_id='log_start_comparison',
         python_callable=log_message("📊 Avvio DAG di confronto esperimenti")
@@ -125,6 +135,21 @@ with DAG('main_nlp_pipeline',
         reset_dag_run=True
     )
 
+    # --- Best Model DAG ---
+    log_start_best_model = PythonOperator(
+        task_id='log_start_best_model_update',
+        python_callable=log_message("✅ Avvio DAG aggiornamento best model")
+    )
+
+    trigger_best_model = TriggerDagRunOperator(
+        task_id='trigger_best_model_update',
+        trigger_dag_id='compare_and_update_best_model_dag',
+        wait_for_completion=True,
+        reset_dag_run=True
+    )
+
+    # --- Definizione dipendenze ---
+
     [
         log_start_preprocessing >> trigger_preprocessing,
         log_start_light >> trigger_light
@@ -136,4 +161,5 @@ with DAG('main_nlp_pipeline',
         log_start_training_sbert >> trigger_training_sbert,
         log_start_training_w2v_unbalanced >> trigger_training_w2v_unbalanced,
         log_start_training_sbert_unbalanced >> trigger_training_sbert_unbalanced
-    ] >> log_start_comparison >> trigger_comparison
+    ] >> log_start_comparison >> trigger_comparison \
+        >> log_start_best_model >> trigger_best_model

@@ -21,15 +21,33 @@ def train_sbert_model():
     # Nome esperimento
     experiment_name = "sbert_balanced"
     timestamp = datetime.utcnow().strftime("%Y%m%dT%H%M%S")
-    experiment_dir = f"/opt/airflow/data/models/{experiment_name}_{timestamp}"
 
+    # Percorsi storici (timestampati)
+    experiment_dir = f"/opt/airflow/data/models/{experiment_name}_{timestamp}"
+    os.makedirs(experiment_dir, exist_ok=True)
     model_path = os.path.join(experiment_dir, "model.pkl")
     metrics_path = os.path.join(experiment_dir, "metrics.json")
     config_path = os.path.join(experiment_dir, "config.json")
+    vectorizer_path = os.path.join(experiment_dir, "vectorizer.pkl")
+
+    # Percorsi latest (sovrascritti ogni volta)
+    latest_dir = "/opt/airflow/data/models/sbert_balanced_latest"
+    os.makedirs(latest_dir, exist_ok=True)
+    latest_model = os.path.join(latest_dir, "model.pkl")
+    latest_metrics = os.path.join(latest_dir, "metrics.json")
+    latest_config = os.path.join(latest_dir, "config.json")
+    latest_vectorizer = os.path.join(latest_dir, "vectorizer.pkl")
 
     # Caricamento dati
     X = np.load(X_path)
     df = pd.read_csv(csv_path)
+
+    if len(X) != len(df):
+        print(f">>> ⚠️ WARNING: X e y non allineati → X: {len(X)}, y: {len(df)}")
+        min_len = min(len(X), len(df))
+        X = X[:min_len]
+        df = df.iloc[:min_len]
+
     y = df["label"]
     print(f">>> [TRAIN] X shape: {X.shape}, y shape: {y.shape}")
 
@@ -52,17 +70,21 @@ def train_sbert_model():
     report = classification_report(y_test, y_pred, output_dict=True)
     print(f">>> [TRAIN] Accuracy: {acc}")
 
-    # Salvataggio directory esperimento
-    os.makedirs(experiment_dir, exist_ok=True)
-
     # Salvataggio modello
     joblib.dump(clf, model_path)
-    print(f">>> [TRAIN] Modello salvato in {model_path}")
+    joblib.dump(clf, latest_model)
+    print(f">>> [TRAIN] Modello salvato in {model_path} e {latest_model}")
+
+    # Salvataggio vectorizer SBERT
+    print(">>> [TRAIN] Vectorizer SBERT NON salvato: sarà ricaricato dinamicamente")
+
 
     # Salvataggio metriche
     with open(metrics_path, "w") as f:
         json.dump({"accuracy": acc, "report": report}, f, indent=2)
-    print(f">>> [TRAIN] Metriche salvate in {metrics_path}")
+    with open(latest_metrics, "w") as f:
+        json.dump({"accuracy": acc, "report": report}, f, indent=2)
+    print(f">>> [TRAIN] Metriche salvate in {metrics_path} e {latest_metrics}")
 
     # Salvataggio configurazione esperimento
     config = {
@@ -76,8 +98,11 @@ def train_sbert_model():
     }
     with open(config_path, "w") as f:
         json.dump(config, f, indent=2)
-    print(f">>> [TRAIN] Config salvata in {config_path}")
+    with open(latest_config, "w") as f:
+        json.dump(config, f, indent=2)
+    print(f">>> [TRAIN] Config salvata in {config_path} e {latest_config}")
 
+# DAG
 # DAG
 with DAG(
     dag_id="train_sbert_model_dag",

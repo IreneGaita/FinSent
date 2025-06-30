@@ -122,6 +122,7 @@ services:
       bash -c "pip install -r /requirements.txt && airflow webserver"
     ports:
       - "8081:8080"
+      - "8000:8000"
     environment:
       <<: *airflow-common-env
       PYTHONPATH: /opt/airflow/data
@@ -143,7 +144,7 @@ services:
       - ./data:/opt/airflow/data
       - ./dags/requirements.txt:/requirements.txt
       - ./models:/opt/airflow/models
-
+      - ./serving:/opt/airflow/serving
   airflow-scheduler:
     <<: *airflow-common
     command: >
@@ -169,7 +170,7 @@ services:
       - ./data:/opt/airflow/data
       - ./dags/requirements.txt:/requirements.txt
       - ./models:/opt/airflow/models
-
+      - ./serving:/opt/airflow/serving
   airflow-worker:
     <<: *airflow-common
     command: >
@@ -191,6 +192,7 @@ services:
       - ./dags/requirements.txt:/requirements.txt
       - ./data:/opt/airflow/data
       - ./models:/opt/airflow/models
+      - ./serving:/opt/airflow/serving
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
